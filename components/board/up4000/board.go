@@ -12,20 +12,15 @@ import (
 const modelName = "up40000"
 
 func init() {
-	golog.Global().Info("in the init function")
 	if _, err := host.Init(); err != nil {
 		golog.Global().Debugw("error initializing host", "error", err)
 	}
-	golog.Global().Info("Initialized host")
-	golog.Global().Info("now mapping gpio")
 	gpioMappings, err := genericlinux.GetGPIOBoardMappings(modelName, boardInfoMappings)
-	golog.Global().Info("finished mapping gpio")
 
 	var noBoardErr genericlinux.NoBoardFoundError
 	if errors.As(err, &noBoardErr) {
 		golog.Global().Debugw("error getting up4000 GPIO board mapping", "error", err)
 	}
-	golog.Global().Info("no errors yet")
-	golog.Global().Info("registering board")
+	genericlinux.RegisterBoard(modelName, gpioMappings, true)
 	genericlinux.RegisterBoard(modelName, gpioMappings, true)
 }
