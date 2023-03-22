@@ -9,7 +9,7 @@ import (
 	"go.viam.com/rdk/components/board/genericlinux"
 )
 
-const modelName = "up40000"
+const modelName = "up4000"
 
 func init() {
 	if _, err := host.Init(); err != nil {
@@ -21,6 +21,6 @@ func init() {
 	if errors.As(err, &noBoardErr) {
 		golog.Global().Debugw("error getting up4000 GPIO board mapping", "error", err)
 	}
-	genericlinux.RegisterBoard(modelName, gpioMappings, true)
+
 	genericlinux.RegisterBoard(modelName, gpioMappings, true)
 }
