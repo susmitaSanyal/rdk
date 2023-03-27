@@ -22,5 +22,5 @@ func init() {
 		golog.Global().Debugw("error getting up4000 GPIO board mapping", "error", err)
 	}
 
-	genericlinux.RegisterBoard(modelName, gpioMappings, true)
+	genericlinux.RegisterBoard(modelName, gpioMappings, false)
 }

@@ -7,7 +7,7 @@ const bbAi = "bb_Ai64"
 var boardInfoMappings = map[string]genericlinux.BoardInformation{
 	bbAi: {
 		PinDefinitions: []genericlinux.PinDefinition{
-
+			// GPIO pin definition
 			{map[int]int{28: 5}, map[int]string{}, "600000.gpio", 29, 0, "GPIO10", "", "", -1},
 			{map[int]int{28: 6}, map[int]string{}, "600000.gpio", 31, 0, "GPIO11", "", "", -1},
 			{map[int]int{28: 14}, map[int]string{}, "600000.gpio", 8, 0, "GPIO15", "", "", -1},
