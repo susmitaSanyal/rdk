@@ -2,10 +2,10 @@ package up4000
 
 import "go.viam.com/rdk/components/board/genericlinux"
 
-const bbAi = "bb_Ai64"
+const upboard = "up_4000"
 
 var boardInfoMappings = map[string]genericlinux.BoardInformation{
-	bbAi: {
+	upboard: {
 		PinDefinitions: []genericlinux.PinDefinition{
 			// GPIO pin definition
 			{map[int]int{28: 5}, map[int]string{}, "600000.gpio", 29, 0, "GPIO10", "", "", -1},
