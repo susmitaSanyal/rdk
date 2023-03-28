@@ -280,6 +280,7 @@ func createDigitalInterrupt(ctx context.Context, config board.DigitalInterruptCo
 		return nil, errors.Errorf("pin names must be numerical, not '%s'", config.Pin)
 	}
 	mapping, ok := gpioMappings[pinInt]
+	fmt.Println("gpioMapping ", gpioMappings)
 	if !ok {
 		return nil, errors.Errorf("Unknown interrupt pin %s", config.Pin)
 	}
