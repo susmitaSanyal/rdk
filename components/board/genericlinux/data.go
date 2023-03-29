@@ -64,15 +64,16 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 		idsPath        = "/proc/device-tree/chosen/plugin-manager/ids"
 	)
 
-	compatiblesRd, err := os.ReadFile(compatiblePath)
-	fmt.Println("compatiblesRd ........................................... ", compatiblesRd)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, noBoardError(modelName)
-		}
-		return nil, err
-	}
-	compatibles := utils.NewStringSet(strings.Split(string(compatiblesRd), "\x00")...)
+	//compatiblesRd, err := os.ReadFile(compatiblePath)
+	// var compatiblesRd = [1]string{"UP-APL03"}
+	// fmt.Println("compatiblesRd ........................................... ", compatiblesRd)
+	// if err != nil {
+	// 	if os.IsNotExist(err) {
+	// 		return nil, noBoardError(modelName)
+	// 	}
+	// 	return nil, err
+	// }
+	compatibles := utils.NewStringSet(strings.Split(string("UP-APL03"), "\x00")...)
 	fmt.Println("compatibles ........................................... ", compatibles)
 	var pinDefs []PinDefinition
 	for _, info := range boardInfoMappings {
