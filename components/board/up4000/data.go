@@ -47,6 +47,6 @@ var boardInfoMappings = map[string]genericlinux.BoardInformation{
 			{map[int]int{28: 20}, map[int]string{}, "600000.gpio", 38, 0, "GPIO26", "", "", -1}, // PCM_DIN
 			{map[int]int{28: 21}, map[int]string{}, "600000.gpio", 40, 0, "GPIO27", "", "", -1}, // PCM_DOUT
 		},
-		[]string{"up4000, UP-APL03P4F-A10-0864"},
+		[]string{"UP-APL03"},
 	},
 }
