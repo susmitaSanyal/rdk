@@ -262,6 +262,8 @@ func gpioInitialize(cancelCtx context.Context, gpioMappings map[int]GPIOBoardMap
 			logger:     logger,
 		}
 	}
+	fmt.Println("pins are ....", pins)
+	fmt.Println("interrupts ........... ", interrupts)
 	return pins, interrupts, nil
 }
 

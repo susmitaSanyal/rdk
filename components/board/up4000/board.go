@@ -15,11 +15,11 @@ func init() {
 	if _, err := host.Init(); err != nil {
 		golog.Global().Debugw("error initializing host", "error", err)
 	}
-	gpioMappings, err := genericlinux.GetGPIOBoardMappings(modelName, boardInfoMappings)
 
+	gpioMappings, err := genericlinux.GetGPIOBoardMappings(modelName, boardInfoMappings)
 	var noBoardErr genericlinux.NoBoardFoundError
 	if errors.As(err, &noBoardErr) {
-		golog.Global().Debugw("error getting up4000 GPIO board mapping", "error", err)
+		golog.Global().Debugw("error getting up board GPIO board mapping", "error", err)
 	}
 
 	genericlinux.RegisterBoard(modelName, gpioMappings, false)

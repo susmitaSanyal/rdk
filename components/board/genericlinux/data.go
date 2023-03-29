@@ -65,6 +65,7 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 	)
 
 	compatiblesRd, err := os.ReadFile(compatiblePath)
+	fmt.Println("compatiblesRd ........................................... ", compatiblesRd)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, noBoardError(modelName)
@@ -72,12 +73,16 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 		return nil, err
 	}
 	compatibles := utils.NewStringSet(strings.Split(string(compatiblesRd), "\x00")...)
-
+	fmt.Println("compatibles ........................................... ", compatibles)
 	var pinDefs []PinDefinition
 	for _, info := range boardInfoMappings {
 		for _, v := range info.Compats {
+			fmt.Println("v ........................................... ", v)
 			if _, ok := compatibles[v]; ok {
+				fmt.Println("compatibles[v] ........................................... ", compatibles[v])
+				fmt.Println("ok ........................................... ", ok)
 				pinDefs = info.PinDefinitions
+				fmt.Println("pinDefs ........................................... ", pinDefs)
 				break
 			}
 		}
