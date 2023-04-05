@@ -262,8 +262,6 @@ func gpioInitialize(cancelCtx context.Context, gpioMappings map[int]GPIOBoardMap
 			logger:     logger,
 		}
 	}
-	fmt.Println("pins are ....", pins)
-	fmt.Println("interrupts ........... ", interrupts)
 	return pins, interrupts, nil
 }
 
@@ -282,7 +280,6 @@ func createDigitalInterrupt(ctx context.Context, config board.DigitalInterruptCo
 		return nil, errors.Errorf("pin names must be numerical, not '%s'", config.Pin)
 	}
 	mapping, ok := gpioMappings[pinInt]
-	fmt.Println("gpioMapping ", gpioMappings)
 	if !ok {
 		return nil, errors.Errorf("Unknown interrupt pin %s", config.Pin)
 	}
@@ -298,7 +295,6 @@ func createDigitalInterrupt(ctx context.Context, config board.DigitalInterruptCo
 	if err != nil {
 		return nil, err
 	}
-
 	interrupt, err := board.CreateDigitalInterrupt(config)
 	if err != nil {
 		return nil, multierr.Combine(err, line.Close())

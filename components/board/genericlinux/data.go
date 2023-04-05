@@ -74,16 +74,11 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 	// 	return nil, err
 	// }
 	compatibles := utils.NewStringSet(strings.Split(string("UP-APL03"), "\x00")...)
-	fmt.Println("compatibles ........................................... ", compatibles)
 	var pinDefs []PinDefinition
 	for _, info := range boardInfoMappings {
 		for _, v := range info.Compats {
-			fmt.Println("v ........................................... ", v)
 			if _, ok := compatibles[v]; ok {
-				fmt.Println("compatibles[v] ........................................... ", compatibles[v])
-				fmt.Println("ok ........................................... ", ok)
 				pinDefs = info.PinDefinitions
-				fmt.Println("pinDefs ........................................... ", pinDefs)
 				break
 			}
 		}
@@ -107,7 +102,7 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 		}
 		gpioChipNames[pinDef.GPIOChipSysFSDir] = struct{}{}
 	}
-	fmt.Println("gpioChpName in generic linux:   .......... ", gpioChipNames)
+
 	for gpioChipName := range gpioChipNames {
 		var gpioChipDir string
 		for _, prefix := range sysfsPrefixes {
@@ -121,7 +116,7 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 				break
 			}
 		}
-		fmt.Println("gpioChipName after for loop in line 107: ................. ", gpioChipDir)
+
 		if gpioChipDir == "" {
 			return nil, errors.Errorf("cannot find GPIO chip %q", gpioChipName)
 		}
@@ -136,7 +131,6 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 			gpioChipDirs[gpioChipName] = file.Name()
 			break
 		}
-		fmt.Println("gpioChipDir after second for loop, ........... ", gpioChipDirs)
 
 		gpioChipGPIODir := gpioChipDir + "/gpio"
 		files, err = os.ReadDir(gpioChipGPIODir)
@@ -173,11 +167,9 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 			gpioChipNgpio[gpioChipName] = int(ngpioParsed)
 			break
 		}
-		fmt.Println("gpioChipGPIODir after third for loop, ........... ", gpioChipGPIODir)
 	}
 
 	data := make(map[int]GPIOBoardMapping, len(pinDefs))
-	fmt.Println("data before populating , ........... ", data)
 	for _, pinDef := range pinDefs {
 		key := pinDef.PinNumberBoard
 
@@ -197,9 +189,7 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 			HWPWMSupported: pinDef.PWMID != -1,
 		}
 
-		fmt.Println("data in the final for loop....................", data)
 	}
 
-	fmt.Println("Final data ..................", data)
 	return data, nil
 }

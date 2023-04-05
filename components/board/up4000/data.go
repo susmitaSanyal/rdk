@@ -15,6 +15,7 @@ var boardInfoMappings = map[string]genericlinux.BoardInformation{
 			{map[int]int{28: 24}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 18, 0, "GPIO19", "", "", -1},
 			{map[int]int{28: 25}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 22, 0, "GPIO20", "", "", -1},
 			{map[int]int{28: 26}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 37, 0, "GPIO14", "", "", -1},
+			{map[int]int{28: 26}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 37, 0, "GPIO403", "", "", -1},
 			{map[int]int{28: 27}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 13, 0, "GPIO4", "", "", -1},
 
 			// ttyS4 UART
@@ -29,16 +30,17 @@ var boardInfoMappings = map[string]genericlinux.BoardInformation{
 			{map[int]int{28: 1}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 28, 0, "GPIO23", "", "", -1}, // ID_SC device: i2c-0
 
 			// pwm
-			{map[int]int{28: 13}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 33, 0, "GPIO12", "", "", -1}, // PWM1 device: pwmchip1/pwm0
-			{map[int]int{28: 12}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 32, 0, "GPIO24", "", "", -1}, // PWM0 device: pwmchip0/pwm0
+			{map[int]int{28: 13}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 33, 0, "GPIO12", "", "", 1}, // PWM1 device: pwmchip1/pwm0
+			{map[int]int{28: 12}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 32, 0, "GPIO24", "", "", 1}, // PWM0 device: pwmchip0/pwm0
 
 			{map[int]int{28: 4}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 7, 0, "GPIO2", "", "", -1},   // ADC0 device: ii0:device0
 			{map[int]int{28: 10}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 19, 0, "GPIO6", "", "", -1}, // SPI_MOSI
 			{map[int]int{28: 9}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 21, 0, "GPIO7", "", "", -1},  // SPI_MISO
 			{map[int]int{28: 11}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 23, 0, "GPIO8", "", "", -1}, // SPI_CLK
 
-			{map[int]int{28: 0}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 27, 0, "GPIO9", "", "", -1},   // ID_SD
-			{map[int]int{28: 19}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 35, 0, "GPIO13", "", "", -1}, // PCM_FS
+			{map[int]int{28: 0}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 27, 0, "GPIO9", "", "", -1},            // ID_SD
+			{map[int]int{28: 19, 78: 327}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 35, 0, "GPIO13", "", "", -1}, // PCM_FS
+			//{map[int]int{78: 327}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 35, 0, "GPIO13", "", "", -1}, // PCM_FS
 
 			{map[int]int{28: 18}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 12, 0, "GPIO17", "", "", -1}, // PCM_CLK
 			{map[int]int{28: 8}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 24, 0, "GPIO21", "", "", -1},  // SPI_CS0 device: spidev2.0
@@ -46,6 +48,7 @@ var boardInfoMappings = map[string]genericlinux.BoardInformation{
 
 			{map[int]int{28: 20}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 38, 0, "GPIO26", "", "", -1}, // PCM_DIN
 			{map[int]int{28: 21}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 40, 0, "GPIO27", "", "", -1}, // PCM_DOUT
+			{map[int]int{28: 22}, map[int]string{}, "AANT0F04:00/upboard-pinctrl.0", 15, 0, "GPIO5", "", "", -1},
 		},
 		[]string{"UP-APL03"},
 	},
