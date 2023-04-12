@@ -102,7 +102,7 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 		}
 		gpioChipNames[pinDef.GPIOChipSysFSDir] = struct{}{}
 	}
-
+	fmt.Println("gpioChipNames...........", gpioChipNames)
 	for gpioChipName := range gpioChipNames {
 		var gpioChipDir string
 		for _, prefix := range sysfsPrefixes {
@@ -190,6 +190,6 @@ func GetGPIOBoardMappings(modelName string, boardInfoMappings map[string]BoardIn
 		}
 
 	}
-
+	fmt.Printf("data is ..................................", data)
 	return data, nil
 }

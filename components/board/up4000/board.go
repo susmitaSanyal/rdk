@@ -2,6 +2,8 @@
 package up4000
 
 import (
+	"fmt"
+
 	"github.com/edaniels/golog"
 	"github.com/pkg/errors"
 	"periph.io/x/host/v3"
@@ -17,6 +19,7 @@ func init() {
 	}
 
 	gpioMappings, err := genericlinux.GetGPIOBoardMappings(modelName, boardInfoMappings)
+	fmt.Printf("gpioMappings.................", gpioMappings)
 	var noBoardErr genericlinux.NoBoardFoundError
 	if errors.As(err, &noBoardErr) {
 		golog.Global().Debugw("error getting up board GPIO board mapping", "error", err)
