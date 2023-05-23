@@ -161,8 +161,14 @@ func (wb *wheeledBase) Reconfigure(ctx context.Context, deps resource.Dependenci
 	wb.allMotors = append(wb.allMotors, wb.left...)
 	wb.allMotors = append(wb.allMotors, wb.right...)
 
-	wb.widthMm = newConf.WidthMM
-	wb.wheelCircumferenceMm = newConf.WheelCircumferenceMM
+	if wb.widthMm != newConf.WidthMM {
+		wb.widthMm = newConf.WidthMM
+	}
+
+	if wb.wheelCircumferenceMm != newConf.WheelCircumferenceMM {
+		wb.wheelCircumferenceMm = newConf.WheelCircumferenceMM
+	}
+
 	wb.spinSlipFactor = newConf.SpinSlipFactor
 
 	return nil
