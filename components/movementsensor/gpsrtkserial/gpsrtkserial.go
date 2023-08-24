@@ -32,6 +32,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"sync"
@@ -484,6 +485,7 @@ func (g *rtkSerial) Position(ctx context.Context, extra map[string]interface{}) 
 	if g.lastposition.IsPositionNaN(position) {
 		position = g.lastposition.GetLastPosition()
 	}
+	fmt.Printf("Position is: %v\n", position)
 	return position, alt, nil
 }
 
