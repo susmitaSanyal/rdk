@@ -420,6 +420,7 @@ func (g *rtkSerial) connectAndParseSourceTable() error {
 		return err
 	}
 	g.logger.Debug("got sourcetable, parsing it...")
+	g.logger.Debugf("sourcetable: %v", srcTable)
 	g.isVirtualBase, err = findLineWithMountPoint(srcTable, g.ntripClient.MountPoint)
 	if err != nil {
 		g.logger.Errorf("can't find mountpoint in source table, found err %v\n", err)
@@ -906,6 +907,7 @@ func containsGGAMessage(data []byte) bool {
 // TODO: RSDK-5462: Refactor GPS RTK.
 func findLineWithMountPoint(sourceTable *ntrip.Sourcetable, mountPoint string) (bool, error) {
 	stream, isFound := sourceTable.HasStream(mountPoint)
+	fmt.Printf("stream is: %v", stream)
 
 	if !isFound {
 		return false, fmt.Errorf("can not find mountpoint %s in sourcetable", mountPoint)
