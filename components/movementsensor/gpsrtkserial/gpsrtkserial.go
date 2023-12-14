@@ -333,6 +333,7 @@ func (g *rtkSerial) getStream(mountPoint string, maxAttempts int) error {
 		// if the error is related to ICY, we log it as warning.
 		if strings.Contains(err.Error(), "ICY") {
 			g.logger.Warnf("Detected old HTTP protocol: %s", err)
+			return err
 		} else {
 			g.logger.Errorf("Can't connect to NTRIP stream: %s", err)
 			return err
@@ -692,6 +693,7 @@ func (g *rtkSerial) Close(ctx context.Context) error {
 	g.ntripMu.Lock()
 	g.cancelFunc()
 
+	g.logger.Debug("Closing GPS RTK Serial")
 	if err := g.nmeamovementsensor.Close(ctx); err != nil {
 		g.ntripMu.Unlock()
 		return err
@@ -727,6 +729,8 @@ func (g *rtkSerial) Close(ctx context.Context) error {
 	if err := g.err.Get(); err != nil && !errors.Is(err, context.Canceled) {
 		return err
 	}
+
+	g.logger.Debug("GPS RTK Serial is closed")
 	return nil
 }
 
