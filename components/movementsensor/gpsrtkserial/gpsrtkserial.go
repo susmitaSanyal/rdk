@@ -35,6 +35,7 @@ import (
 	"bufio"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"strings"
@@ -333,7 +334,7 @@ func (g *rtkSerial) getStream(mountPoint string, maxAttempts int) error {
 		// if the error is related to ICY, we log it as warning.
 		if strings.Contains(err.Error(), "ICY") {
 			g.logger.Warnf("Detected old HTTP protocol: %s", err)
-			return err
+			g.err.Set(err)
 		} else {
 			g.logger.Errorf("Can't connect to NTRIP stream: %s", err)
 			return err
@@ -400,6 +401,7 @@ func (g *rtkSerial) connectAndParseSourceTable() error {
 
 	g.urlMutex.Lock()
 	defer g.urlMutex.Unlock()
+
 	err := g.connect(g.ntripClient.URL, g.ntripClient.Username, g.ntripClient.Password, g.ntripClient.MaxConnectAttempts)
 	if err != nil {
 		g.err.Set(err)
@@ -407,7 +409,20 @@ func (g *rtkSerial) connectAndParseSourceTable() error {
 	}
 
 	if !g.ntripClient.Client.IsCasterAlive() {
-		g.logger.Infof("caster %s seems to be down", g.ntripClient.URL)
+		g.logger.Infof("caster %s seems to be down, retrying", g.ntripClient.URL)
+		attempts := 0
+		// we will try to connect to the caster five times if it's down.
+		for attempts < 5 {
+			if !g.ntripClient.Client.IsCasterAlive() {
+				attempts++
+				g.logger.Debugf("attempt(s) to connect to caster: %v ", attempts)
+			} else {
+				break
+			}
+		}
+		if attempts == 5 {
+			return fmt.Errorf("caster %s is down", g.ntripClient.URL)
+		}
 	}
 
 	g.logger.Debug("gettting source table")
