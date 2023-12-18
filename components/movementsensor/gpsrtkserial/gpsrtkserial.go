@@ -431,6 +431,8 @@ func (g *rtkSerial) connectAndParseSourceTable() error {
 		g.logger.Errorf("failed to get source table: %v", err)
 		return err
 	}
+	g.logger.Debugf("sourceTable is: %v\n", srcTable)
+
 	g.logger.Debug("got sourcetable, parsing it...")
 	g.isVirtualBase, err = rtk.FindLineWithMountPoint(srcTable, g.ntripClient.MountPoint)
 	if err != nil {

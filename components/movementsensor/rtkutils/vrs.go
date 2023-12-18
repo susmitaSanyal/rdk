@@ -98,6 +98,7 @@ func ContainsGGAMessage(data []byte) bool {
 // the given mountpoint.
 func FindLineWithMountPoint(sourceTable *ntrip.Sourcetable, mountPoint string) (bool, error) {
 	stream, isFound := sourceTable.HasStream(mountPoint)
+	fmt.Printf("stream from FindLineWithmountPoint: %v\n", stream)
 
 	if !isFound {
 		return false, fmt.Errorf("can not find mountpoint %s in sourcetable", mountPoint)
