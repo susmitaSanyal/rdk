@@ -40,6 +40,7 @@ import (
 	"math"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/de-bkg/gognss/pkg/ntrip"
 	"github.com/go-gnss/rtcm/rtcm3"
@@ -498,6 +499,9 @@ func (g *rtkSerial) receiveAndWriteSerial() {
 	g.isConnectedToNtrip = true
 	g.ntripMu.Unlock()
 
+	// Send GGA message periodically.
+	go g.sendPeriodicGGAMessages()
+
 	// It's okay to skip the mutex on this next line: g.isConnectedToNtrip can only be mutated by this
 	// goroutine itself
 	for g.isConnectedToNtrip && !g.isClosed {
@@ -521,6 +525,11 @@ func (g *rtkSerial) receiveAndWriteSerial() {
 				if g.isVirtualBase {
 					g.logger.Debug("reconnecting to the Virtual Reference Station")
 
+					err = g.getNtripFromVRS()
+					if err != nil && !errors.Is(err, io.EOF) {
+						g.err.Set(err)
+						//return
+					}
 					err = g.getNtripFromVRS()
 					if err != nil && !errors.Is(err, io.EOF) {
 						g.err.Set(err)
@@ -785,6 +794,9 @@ func (g *rtkSerial) getNtripFromVRS() error {
 		}
 	}
 
+	// Need to setup some wait function here.
+	// NMEA stream is always coming in. so there's no reason for us to not get a GGA message.
+	// we should only break out of getggamessage when we get a gga.
 	ggaMessage, err := rtk.GetGGAMessage(g.correctionWriter, g.logger)
 	if err != nil {
 		g.logger.Error("Failed to get GGA message")
@@ -808,4 +820,39 @@ func (g *rtkSerial) getNtripFromVRS() error {
 	g.logger.Debug("GGA message sent successfully.")
 
 	return nil
+}
+
+func (g *rtkSerial) sendPeriodicGGAMessages() {
+	ticker := time.NewTicker(20 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			// Send GGA message
+			if g.isConnectedToNtrip {
+				ggaMessage, err := rtk.GetGGAMessage(g.correctionWriter, g.logger)
+				if err != nil {
+					g.logger.Error("Failed to get GGA message")
+					continue
+				}
+
+				_, err = g.readerWriter.WriteString(string(ggaMessage))
+				if err != nil {
+					g.logger.Error("Failed to send NMEA data:", err)
+					continue
+				}
+
+				err = g.readerWriter.Flush()
+				if err != nil {
+					g.logger.Error("failed to write to buffer: ", err)
+					continue
+				}
+
+				g.logger.Debug("GGA message sent successfully.")
+			}
+		case <-g.cancelCtx.Done():
+			return
+		}
+	}
 }

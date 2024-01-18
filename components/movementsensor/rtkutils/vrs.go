@@ -9,6 +9,7 @@ import (
 	"io"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/de-bkg/gognss/pkg/ntrip"
 
@@ -65,25 +66,31 @@ func ConnectToVirtualBase(ntripInfo *NtripInfo,
 func GetGGAMessage(correctionWriter io.ReadWriteCloser, logger logging.Logger) ([]byte, error) {
 	buffer := make([]byte, 1024)
 	var totalBytesRead int
+	timeout := time.NewTimer(30 * time.Second)
 
 	for {
-		n, err := correctionWriter.Read(buffer[totalBytesRead:])
-		if err != nil {
-			logger.Errorf("Error reading from Ntrip stream: %v", err)
-			return nil, err
-		}
+		select {
+		case <-timeout.C:
+			return nil, errors.New("Timeout: GGA message not found within 30 seconds")
 
-		totalBytesRead += n
+		default:
+			n, err := correctionWriter.Read(buffer[totalBytesRead:])
+			if err != nil {
+				logger.Errorf("Error reading from Ntrip stream: %v", err)
+				return nil, err
+			}
 
-		// Check if the received data contains "GGA"
-		if ContainsGGAMessage(buffer[:totalBytesRead]) {
-			return buffer[:totalBytesRead], nil
-		}
+			totalBytesRead += n
 
-		// If we haven't found the "GGA" message, and we've reached the end of
-		// the buffer, return error.
-		if totalBytesRead >= len(buffer) {
-			return nil, errors.New("GGA message not found in the received data")
+			if ContainsGGAMessage(buffer[:totalBytesRead]) {
+				return buffer[:totalBytesRead], nil
+			}
+
+			if totalBytesRead >= len(buffer) {
+				// Clear the buffer and continue reading
+				buffer = buffer[:0]
+				totalBytesRead = 0
+			}
 		}
 	}
 }
