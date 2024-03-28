@@ -126,6 +126,7 @@ type rtkI2C struct {
 	mu          sync.Mutex
 	ntripClient *gpsutils.NtripInfo
 	ntripStatus bool
+	isClosed    bool
 
 	err          movementsensor.LastError
 	lastposition movementsensor.LastPosition
@@ -265,15 +266,19 @@ func (g *rtkI2C) start() error {
 
 // getStream attempts to connect to ntrip stream until successful connection or timeout.
 func (g *rtkI2C) getStream(mountPoint string, maxAttempts int) error {
-	success := false
-	attempts := 0
+	g.mu.Lock()
+	defer g.mu.Unlock()
 
 	var rc io.ReadCloser
 	var err error
 
 	g.logger.Debug("Getting NTRIP stream")
 
-	for !success && attempts < maxAttempts {
+	for attempts := 0; attempts < maxAttempts; attempts++ {
+		if g.isClosed {
+			return g.err.Get()
+		}
+
 		select {
 		case <-g.cancelCtx.Done():
 			return errors.New("Canceled")
@@ -281,32 +286,27 @@ func (g *rtkI2C) getStream(mountPoint string, maxAttempts int) error {
 		}
 
 		rc, err = func() (io.ReadCloser, error) {
-			g.mu.Lock()
-			defer g.mu.Unlock()
 			return g.ntripClient.Client.GetStream(mountPoint)
 		}()
 		if err == nil {
-			success = true
-		}
-		attempts++
-	}
+			g.logger.Debug("Connected to stream")
 
-	if err != nil {
-		// if the error is related to ICY, we log it as warning.
-		if strings.Contains(err.Error(), "ICY") {
-			g.logger.Warnf("Detected old HTTP protocol: %s", err)
-		} else {
-			g.logger.Errorf("Can't connect to NTRIP stream: %s", err)
-			return err
+			g.ntripClient.Stream = rc
+			return g.err.Get()
 		}
 	}
+	// If we get here, we had errors on every connection attempt.
 
-	g.logger.Debug("Connected to stream")
-	g.mu.Lock()
-	defer g.mu.Unlock()
+	// Errors about the old ICY protocol are not "real" errors, but all others are.
+	if !strings.Contains(err.Error(), "ICY") {
+		g.logger.Errorf("Can't connect to NTRIP stream: %s", err)
+		return err
+	}
 
+	// The error was related to the old ICY protocol. Try storing the ReadCloser anyway.
+	g.logger.Warnf("Detected old HTTP protocol: %s", err)
 	g.ntripClient.Stream = rc
-	return g.err.Get()
+	return err
 }
 
 // receiveAndWriteI2C connects to NTRIP receiver and sends correction stream to the MovementSensor through I2C protocol.
