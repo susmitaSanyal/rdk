@@ -4,6 +4,7 @@ package fake
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"sync"
 	"time"
@@ -282,7 +283,7 @@ func (a *AnalogReader) reset(pin string) {
 func (a *AnalogReader) Read(ctx context.Context, extra map[string]interface{}) (int, error) {
 	a.Mu.RLock()
 	defer a.Mu.RUnlock()
-	return a.Value, nil
+	return rand.Intn(100), nil
 }
 
 // Set is used during testing.
