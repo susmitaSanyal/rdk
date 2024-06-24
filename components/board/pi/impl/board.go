@@ -83,9 +83,9 @@ func (conf *Config) Validate(path string) ([]string, error) {
 	return nil, nil
 }
 
-// piPigpio is an implementation of a board.Board of a Raspberry Pi
+// PiPigpio is an implementation of a board.Board of a Raspberry Pi
 // accessed via pigpio.
-type piPigpio struct {
+type PiPigpio struct {
 	resource.Named
 	// To prevent deadlocks, we must never lock this mutex while instanceMu, defined below, is
 	// locked. It's okay to lock instanceMu while this is locked, though. This invariant prevents
@@ -109,11 +109,11 @@ type piPigpio struct {
 
 var (
 	pigpioInitialized bool
-	// To prevent deadlocks, we must never lock the mutex of a specific piPigpio struct, above,
+	// To prevent deadlocks, we must never lock the mutex of a specific PiPigpio struct, above,
 	// while this is locked. It is okay to lock this while one of those other mutexes is locked
 	// instead.
 	instanceMu sync.RWMutex
-	instances  = map[*piPigpio]struct{}{}
+	instances  = map[*PiPigpio]struct{}{}
 )
 
 func initializePigpio() error {
@@ -142,7 +142,7 @@ func initializePigpio() error {
 }
 
 // newPigpio makes a new pigpio based Board using the given config.
-func newPigpio(ctx context.Context, name resource.Name, cfg resource.Config, logger logging.Logger) (board.Board, error) {
+func NewPigpio(ctx context.Context, name resource.Name, cfg resource.Config, logger logging.Logger) (board.Board, error) {
 	// this is so we can run it inside a daemon
 	internals := C.gpioCfgGetInternals()
 	internals |= C.PI_CFG_NOSIGHANDLER
@@ -156,7 +156,7 @@ func newPigpio(ctx context.Context, name resource.Name, cfg resource.Config, log
 	}
 
 	cancelCtx, cancelFunc := context.WithCancel(context.Background())
-	piInstance := &piPigpio{
+	piInstance := &PiPigpio{
 		Named:      name.AsNamed(),
 		logger:     logger,
 		isClosed:   false,
@@ -176,7 +176,7 @@ func newPigpio(ctx context.Context, name resource.Name, cfg resource.Config, log
 	return piInstance, nil
 }
 
-func (pi *piPigpio) Reconfigure(
+func (pi *PiPigpio) Reconfigure(
 	ctx context.Context,
 	_ resource.Dependencies,
 	conf resource.Config,
@@ -206,7 +206,7 @@ func (pi *piPigpio) Reconfigure(
 }
 
 // StreamTicks starts a stream of digital interrupt ticks.
-func (pi *piPigpio) StreamTicks(ctx context.Context, interrupts []board.DigitalInterrupt, ch chan board.Tick,
+func (pi *PiPigpio) StreamTicks(ctx context.Context, interrupts []board.DigitalInterrupt, ch chan board.Tick,
 	extra map[string]interface{},
 ) error {
 	for _, i := range interrupts {
@@ -229,7 +229,7 @@ func (pi *piPigpio) StreamTicks(ctx context.Context, interrupts []board.DigitalI
 	return nil
 }
 
-func (pi *piPigpio) reconfigureAnalogReaders(ctx context.Context, cfg *Config) error {
+func (pi *PiPigpio) reconfigureAnalogReaders(ctx context.Context, cfg *Config) error {
 	// No need to reconfigure the old analog readers; just throw them out and make new ones.
 	pi.analogReaders = map[string]*pinwrappers.AnalogSmoother{}
 	for _, ac := range cfg.AnalogReaders {
@@ -275,7 +275,7 @@ func findInterruptBcom(
 	return 0, false
 }
 
-func (pi *piPigpio) reconfigureInterrupts(ctx context.Context, cfg *Config) error {
+func (pi *PiPigpio) reconfigureInterrupts(ctx context.Context, cfg *Config) error {
 	// We reuse the old interrupts when possible.
 	oldInterrupts := pi.interrupts
 	oldInterruptsHW := pi.interruptsHW
@@ -395,7 +395,7 @@ func (pi *piPigpio) reconfigureInterrupts(ctx context.Context, cfg *Config) erro
 }
 
 // GPIOPinByName returns a GPIOPin by name.
-func (pi *piPigpio) GPIOPinByName(pin string) (board.GPIOPin, error) {
+func (pi *PiPigpio) GPIOPinByName(pin string) (board.GPIOPin, error) {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	bcom, have := broadcomPinFromHardwareLabel(pin)
@@ -406,7 +406,7 @@ func (pi *piPigpio) GPIOPinByName(pin string) (board.GPIOPin, error) {
 }
 
 type gpioPin struct {
-	pi   *piPigpio
+	pi   *PiPigpio
 	bcom int
 }
 
@@ -435,7 +435,7 @@ func (gp gpioPin) SetPWMFreq(ctx context.Context, freqHz uint, extra map[string]
 }
 
 // GetGPIOBcom gets the level of the given broadcom pin
-func (pi *piPigpio) GetGPIOBcom(bcom int) (bool, error) {
+func (pi *PiPigpio) GetGPIOBcom(bcom int) (bool, error) {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	if !pi.gpioConfigSet[bcom] {
@@ -454,7 +454,7 @@ func (pi *piPigpio) GetGPIOBcom(bcom int) (bool, error) {
 }
 
 // SetGPIOBcom sets the given broadcom pin to high or low.
-func (pi *piPigpio) SetGPIOBcom(bcom int, high bool) error {
+func (pi *PiPigpio) SetGPIOBcom(bcom int, high bool) error {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	if !pi.gpioConfigSet[bcom] {
@@ -476,13 +476,13 @@ func (pi *piPigpio) SetGPIOBcom(bcom int, high bool) error {
 	return nil
 }
 
-func (pi *piPigpio) pwmBcom(bcom int) (float64, error) {
+func (pi *PiPigpio) pwmBcom(bcom int) (float64, error) {
 	res := C.gpioGetPWMdutycycle(C.uint(bcom))
 	return float64(res) / 255, nil
 }
 
 // SetPWMBcom sets the given broadcom pin to the given PWM duty cycle.
-func (pi *piPigpio) SetPWMBcom(bcom int, dutyCyclePct float64) error {
+func (pi *PiPigpio) SetPWMBcom(bcom int, dutyCyclePct float64) error {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	dutyCycle := rdkutils.ScaleByPct(255, dutyCyclePct)
@@ -493,13 +493,13 @@ func (pi *piPigpio) SetPWMBcom(bcom int, dutyCyclePct float64) error {
 	return nil
 }
 
-func (pi *piPigpio) pwmFreqBcom(bcom int) (uint, error) {
+func (pi *PiPigpio) pwmFreqBcom(bcom int) (uint, error) {
 	res := C.gpioGetPWMfrequency(C.uint(bcom))
 	return uint(res), nil
 }
 
 // SetPWMFreqBcom sets the given broadcom pin to the given PWM frequency.
-func (pi *piPigpio) SetPWMFreqBcom(bcom int, freqHz uint) error {
+func (pi *PiPigpio) SetPWMFreqBcom(bcom int, freqHz uint) error {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	if freqHz == 0 {
@@ -518,7 +518,7 @@ func (pi *piPigpio) SetPWMFreqBcom(bcom int, freqHz uint) error {
 }
 
 type piPigpioSPI struct {
-	pi           *piPigpio
+	pi           *PiPigpio
 	mu           sync.Mutex
 	busSelect    string
 	openHandle   *piPigpioSPIHandle
@@ -649,7 +649,7 @@ func (s *piPigpioSPIHandle) Close() error {
 }
 
 // AnalogNames returns the names of all known analog pins.
-func (pi *piPigpio) AnalogNames() []string {
+func (pi *PiPigpio) AnalogNames() []string {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	names := []string{}
@@ -660,7 +660,7 @@ func (pi *piPigpio) AnalogNames() []string {
 }
 
 // DigitalInterruptNames returns the names of all known digital interrupts.
-func (pi *piPigpio) DigitalInterruptNames() []string {
+func (pi *PiPigpio) DigitalInterruptNames() []string {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	names := []string{}
@@ -671,7 +671,7 @@ func (pi *piPigpio) DigitalInterruptNames() []string {
 }
 
 // AnalogByName returns an analog pin by name.
-func (pi *piPigpio) AnalogByName(name string) (board.Analog, error) {
+func (pi *PiPigpio) AnalogByName(name string) (board.Analog, error) {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	a, ok := pi.analogReaders[name]
@@ -685,7 +685,7 @@ func (pi *piPigpio) AnalogByName(name string) (board.Analog, error) {
 // NOTE: During board setup, if a digital interrupt has not been created
 // for a pin, then this function will attempt to create one with the pin
 // number as the name.
-func (pi *piPigpio) DigitalInterruptByName(name string) (board.DigitalInterrupt, error) {
+func (pi *PiPigpio) DigitalInterruptByName(name string) (board.DigitalInterrupt, error) {
 	pi.mu.Lock()
 	defer pi.mu.Unlock()
 	d, ok := pi.interrupts[name]
@@ -717,12 +717,12 @@ func (pi *piPigpio) DigitalInterruptByName(name string) (board.DigitalInterrupt,
 	return d, nil
 }
 
-func (pi *piPigpio) SetPowerMode(ctx context.Context, mode pb.PowerMode, duration *time.Duration) error {
+func (pi *PiPigpio) SetPowerMode(ctx context.Context, mode pb.PowerMode, duration *time.Duration) error {
 	return grpc.UnimplementedError
 }
 
 // Close attempts to close all parts of the board cleanly.
-func (pi *piPigpio) Close(ctx context.Context) error {
+func (pi *PiPigpio) Close(ctx context.Context) error {
 	var terminate bool
 	// Prevent duplicate calls to Close a board as this may overlap with
 	// the reinitialization of the board
