@@ -48,6 +48,8 @@ const (
 	moduleFlagPlatform        = "platform"
 	moduleFlagForce           = "force"
 	moduleFlagBinary          = "binary"
+	moduleFlagLocal           = "local"
+	moduleFlagHomeDir         = "home"
 
 	moduleBuildFlagPath      = "module"
 	moduleBuildFlagRef       = "ref"
@@ -68,6 +70,7 @@ const (
 	mlTrainingFlagDraft       = "draft"
 	mlTrainingFlagVisibility  = "visibility"
 	mlTrainingFlagDescription = "description"
+	mlTrainingFlagURL         = "url"
 
 	dataFlagDestination                    = "destination"
 	dataFlagDataType                       = "data-type"
@@ -819,6 +822,37 @@ var app = &cli.App{
 						},
 					},
 					Action: DatasetCreateAction,
+				},
+				{
+					Name:  "download",
+					Usage: "download data from a dataset",
+					UsageText: createUsageText("dataset download",
+						[]string{datasetFlagDatasetID, datasetFlagName}, false),
+					Flags: []cli.Flag{
+						&cli.PathFlag{
+							Name:     dataFlagDestination,
+							Required: true,
+							Usage:    "output directory for downloaded data",
+						},
+						&cli.StringFlag{
+							Name:     datasetFlagDatasetID,
+							Required: true,
+							Usage:    "dataset ID of the dataset to be downloaded",
+						},
+						&cli.BoolFlag{
+							Name:     datasetFlagIncludeJSONLines,
+							Required: false,
+							Usage:    "option to include JSON Lines files for local testing",
+							Value:    false,
+						},
+						&cli.UintFlag{
+							Name:     dataFlagParallelDownloads,
+							Required: false,
+							Usage:    "number of download requests to make in parallel",
+							Value:    100,
+						},
+					},
+					Action: DatasetDownloadAction,
 				},
 			},
 		},
@@ -1577,6 +1611,19 @@ Example:
 					Name:      "reload",
 					Usage:     "build a module locally and run it on a target device. rebuild & restart if already running",
 					UsageText: createUsageText("module reload", []string{}, true),
+					Description: `Example invocations:
+
+	# A full reload command. This will build your module, send the tarball to the machine with given part ID,
+	# and configure or restart it.
+	# The GOARCH env in this case would get passed to an underlying go build (assuming you're targeting an arm device).
+	# Note that you'll still need to add the components for your models after your module is installed.
+	GOARCH=arm64 viam module reload --part UUID
+
+	# Restart a module running on your local viam server, by name, without building or reconfiguring.
+	viam module reload --restart-only --id viam:python-example-module
+
+	# Build and configure a module on your local machine without shipping a tarball.
+	viam module reload --local`,
 					Flags: []cli.Flag{
 						&cli.StringFlag{
 							Name:  partFlag,
@@ -1602,6 +1649,15 @@ Example:
 						&cli.BoolFlag{
 							Name:  moduleBuildFlagNoBuild,
 							Usage: "don't do build step",
+						},
+						&cli.BoolFlag{
+							Name:  moduleFlagLocal,
+							Usage: "if the target machine is localhost, run the entrypoint directly rather than transferring a bundle",
+						},
+						&cli.StringFlag{
+							Name:  moduleFlagHomeDir,
+							Usage: "remote user's home directory. only necessary if you're targeting a remote machine where $HOME is not /root",
+							Value: "/root",
 						},
 					},
 					Action: ReloadModuleAction,
@@ -1731,6 +1787,11 @@ Example:
 						&cli.BoolFlag{
 							Name:     mlTrainingFlagDraft,
 							Usage:    "indicate draft mode, drafts will not be viewable in the registry",
+							Required: false,
+						},
+						&cli.StringFlag{
+							Name:     mlTrainingFlagURL,
+							Usage:    "url of Github repository associated with the training scripts",
 							Required: false,
 						},
 					},

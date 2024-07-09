@@ -73,12 +73,12 @@ type syncer struct {
 
 // ManagerConstructor is a function for building a Manager.
 type ManagerConstructor func(identity string, client v1.DataSyncServiceClient, logger logging.Logger,
-	captureDir string, maxSyncThreadsConfig int, filesToSync chan string) (Manager, error)
+	captureDir string, maxSyncThreadsConfig int, filesToSync chan string) Manager
 
 // NewManager returns a new syncer.
 func NewManager(identity string, client v1.DataSyncServiceClient, logger logging.Logger,
 	captureDir string, maxSyncThreads int, filesToSync chan string,
-) (Manager, error) {
+) Manager {
 	cancelCtx, cancelFunc := context.WithCancel(context.Background())
 	logger.Infof("Making new syncer with %d max threads", maxSyncThreads)
 	ret := syncer{
@@ -120,7 +120,7 @@ func NewManager(identity string, client v1.DataSyncServiceClient, logger logging
 		}()
 	}
 
-	return &ret, nil
+	return &ret
 }
 
 // Close closes all resources (goroutines) associated with s.
@@ -186,7 +186,8 @@ func (s *syncer) syncDataCaptureFile(f *datacapture.File) {
 		func(ctx context.Context) error {
 			err := uploadDataCaptureFile(ctx, s.client, f, s.partID)
 			if err != nil {
-				s.syncErrs <- errors.Wrap(err, fmt.Sprintf("error uploading file %s", f.GetPath()))
+				s.syncErrs <- errors.Wrap(err, fmt.Sprintf("error uploading file %s, size: %d, md: %s",
+					f.GetPath(), f.Size(), f.ReadMetadata()))
 			}
 			return err
 		},
