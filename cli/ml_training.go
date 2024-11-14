@@ -365,6 +365,7 @@ func (c *viamClient) uploadTrainingScript(draft bool, modelType, framework, url,
 		version,
 		string(PackageTypeMLTraining),
 		path,
+		framework,
 		metadataStruct,
 	)
 	if err != nil {

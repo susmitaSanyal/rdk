@@ -191,6 +191,7 @@ func PackageUploadAction(c *cli.Context) error {
 		c.String(packageFlagVersion),
 		c.String(packageFlagType),
 		c.Path(packageFlagPath),
+		c.String(packageModelFrameWork),
 		nil,
 	)
 	if err != nil {
@@ -203,7 +204,7 @@ func PackageUploadAction(c *cli.Context) error {
 }
 
 func (c *viamClient) uploadPackage(
-	orgID, name, version, packageType, tarballPath string,
+	orgID, name, version, packageType, tarballPath string, framework string,
 	metadataStruct *structpb.Struct,
 ) (*packagespb.CreatePackageResponse, error) {
 	if err := c.ensureLoggedIn(); err != nil {
@@ -234,6 +235,7 @@ func (c *viamClient) uploadPackage(
 		Name:           name,
 		Version:        version,
 		Type:           *packageTypeProto,
+		Framework:      framework,
 		Metadata:       metadataStruct,
 	}
 	req := &packagespb.CreatePackageRequest{
