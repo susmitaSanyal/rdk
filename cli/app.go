@@ -110,7 +110,6 @@ const (
 	packageFlagType        = "type"
 	packageFlagDestination = "destination"
 	packageFlagPath        = "path"
-	packageModelFrameWork  = "model-framework"
 
 	authApplicationFlagName          = "application-name"
 	authApplicationFlagApplicationID = "application-id"
@@ -1909,7 +1908,7 @@ This won't work unless you have an existing installation of our GitHub app on yo
 							Usage:    "type of the requested package, can be: " + strings.Join(packageTypes, ", "),
 						},
 						&cli.StringFlag{
-							Name:     packageModelFrameWork,
+							Name:     mlTrainingFlagFramework,
 							Required: false,
 							Usage:    "specify the framework type of the package, can be: " + strings.Join(modelFrameworks, ", "),
 						},

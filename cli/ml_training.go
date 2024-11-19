@@ -485,7 +485,6 @@ type MLMetadata struct {
 func createMetadata(draft bool, modelType, framework, url string) (*MLMetadata, error) {
 	t, typeErr := findValueOrSetDefault(modelTypes, modelType, string(ModelTypeUnspecified))
 	f, frameWorkErr := findValueOrSetDefault(modelFrameworks, framework, string(ModelFrameworkUnspecified))
-
 	if typeErr != nil || frameWorkErr != nil {
 		return nil, errors.Wrap(multierr.Combine(typeErr, frameWorkErr), "failed to set metadata")
 	}

@@ -191,9 +191,10 @@ func PackageUploadAction(c *cli.Context) error {
 		c.String(packageFlagVersion),
 		c.String(packageFlagType),
 		c.Path(packageFlagPath),
-		c.String(packageModelFrameWork),
+		c.String(mlTrainingFlagFramework),
 		nil,
 	)
+	fmt.Printf("output of packageUploadAction %v", resp)
 	if err != nil {
 		return err
 	}
@@ -210,7 +211,7 @@ func (c *viamClient) uploadPackage(
 	if err := c.ensureLoggedIn(); err != nil {
 		return nil, err
 	}
-
+	fmt.Printf("Framework in uploadPackage: %s\n", framework)
 	//nolint:gosec
 	file, err := os.Open(tarballPath)
 	if err != nil {
@@ -238,11 +239,14 @@ func (c *viamClient) uploadPackage(
 		Framework:      framework,
 		Metadata:       metadataStruct,
 	}
+	fmt.Printf("PackageInfo: %+v\n", pkgInfo)
+
 	req := &packagespb.CreatePackageRequest{
 		Package: &packagespb.CreatePackageRequest_Info{
 			Info: &pkgInfo,
 		},
 	}
+	fmt.Printf("CreatePackageRequest: %+v\n", req)
 	if err := stream.Send(req); err != nil {
 		return nil, err
 	}
